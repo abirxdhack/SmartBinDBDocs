@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="SmartBinDB - A powerful asynchronous Python library for retrieving BIN database information by country or bank name.">
+    <meta property="og:title" content="SmartBinDB Library">
+    <meta property="og:description" content="Explore the SmartBinDB library for fast, asynchronous BIN lookups with a sleek, modern interface.">
+    <title>SmartBinDB - Ultimate BIN Database Library</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@300;400&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: linear-gradient(180deg, #ffffff 0%, #e0e0ff 100%);
+            color: #333333;
+            overflow-x: hidden;
+            position: relative;
+        }
+        .hero {
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%"><defs><filter id="glow"><feGaussianBlur stdDeviation="3.5" result="coloredBlur"/><feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><rect width="100%" height="100%" fill="none" filter="glow"/></svg>'), linear-gradient(135deg, #e0e0ff, #3b82f6);
+            clip-path: polygon(0 0, 100% 0, 100% 85%, 0 100%);
+            padding: 150px 0;
+            text-align: center;
+        }
+        h1, h2 {
+            font-family: 'Orbitron', sans-serif;
+            text-shadow: 0 0 10px rgba(59, 130, 246, 0.7);
+        }
+        .navbar {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        .nav-link {
+            transition: color 0.3s, transform 0.3s;
+        }
+        .nav-link:hover {
+            color: #3b82f6;
+            transform: scale(1.1);
+        }
+        .sidebar {
+            background: rgba(255, 255, 255, 0.95);
+            position: fixed;
+            top: 0;
+            left: -250px;
+            width: 250px;
+            height: 100%;
+            transition: left 0.3s ease;
+            z-index: 100;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
+        }
+        .sidebar.active {
+            left: 0;
+        }
+        .sidebar a {
+            display: block;
+            padding: 15px 20px;
+            color: #333333;
+            transition: background 0.2s, transform 0.2s;
+        }
+        .sidebar a:hover {
+            background: #3b82f6;
+            color: #ffffff;
+            transform: translateX(10px);
+        }
+        .toggle-btn {
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #333333;
+        }
+        .input-panel {
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid #3b82f6;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+            transition: transform 0.3s;
+        }
+        .input-panel:hover {
+            transform: translateY(-5px);
+        }
+        .feature-card {
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid #3b82f6;
+            border-radius: 10px;
+            padding: 20px;
+            transition: transform 0.3s;
+        }
+        .feature-card:hover {
+            transform: scale(1.05);
+        }
+        .response-card {
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid #3b82f6;
+            border-radius: 10px;
+            padding: 20px;
+            animation: fadeIn 0.5s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .social-icons a {
+            font-size: 2rem;
+            margin: 0 15px;
+            transition: transform 0.3s, filter 0.3s;
+            color: #333333;
+        }
+        .social-icons a:hover {
+            transform: scale(1.2);
+            filter: drop-shadow(0 0 10px #3b82f6);
+        }
+        #canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: -1;
+            opacity: 0.3;
+        }
+        pre {
+            background: #ffffff !important;
+            color: #333333;
+            padding: 16px;
+            border-radius: 8px;
+            font-family: 'Courier New', Courier, monospace;
+            white-space: pre-wrap;
+            border: 1px solid #3b82f6;
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
+        }
+        pre strong {
+            color: #3b82f6;
+        }
+        pre .string { color: #34d399; }
+        pre .number { color: #f59e0b; }
+        pre .boolean { color: #f472b6; }
+        pre .null { color: #94a3b8; }
+        pre .key { color: #3b82f6; }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+
+    <div class="sidebar" id="sidebar">
+        <a href="#" class="text-xl font-bold text-blue-600 p-4 border-b border-gray-200"><i class="fas fa-database mr-2"></i> SmartBinDB</a>
+        <a href="#features" class="nav-link"><i class="fas fa-star mr-2"></i> Features</a>
+        <a href="#docs" class="nav-link"><i class="fas fa-book mr-2"></i> Documentation</a>
+        <a href="#developer" class="nav-link"><i class="fas fa-user mr-2"></i> Developer</a>
+        <a href="https://t.me/TheSmartDevs" target="_blank" class="nav-link"><i class="fas fa-paper-plane mr-2"></i> Updates</a>
+    </div>
+
+    <nav class="navbar py-4">
+        <div class="container mx-auto px-4 flex justify-between items-center">
+            <span class="toggle-btn" onclick="toggleSidebar()"><i class="fas fa-bars"></i></span>
+            <a href="#" class="text-2xl font-bold text-blue-600 flex items-center">
+                <i class="fas fa-database text-blue-500 mr-2"></i>
+                SmartBinDB
+            </a>
+            <div class="hidden md:flex items-center space-x-6">
+                <a href="#features" class="nav-link text-blue-600">Features</a>
+                <a href="#docs" class="nav-link text-blue-600">Documentation</a>
+                <a href="#developer" class="nav-link text-blue-600">Developer</a>
+                <a href="https://t.me/TheSmartDevs" target="_blank" class="nav-link text-blue-600">Updates</a>
+            </div>
+        </div>
+    </nav>
+
+    <header class="hero">
+        <div class="container mx-auto px-4">
+            <h1 class="text-5xl font-bold mb-4 text-blue-600">SmartBinDB Library</h1>
+            <p class="text-xl mb-6 text-gray-800">Unlock the power of BIN data with a lightning-fast, asynchronous Python library covering 228 countries and 30,000,000 records.</p>
+            <a href="#docs" class="inline-block bg-blue-500 text-white px-6 py-3 rounded-full mt-4 hover:bg-blue-600 transition">Get Started</a>
+        </div>
+    </header>
+
+    <section id="features" class="container mx-auto px-4 py-16">
+        <h2 class="text-3xl font-bold text-center mb-8 text-blue-600">Features</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="feature-card">
+                <h3 class="text-xl font-semibold mb-2"><i class="fas fa-bolt mr-2"></i> Superfast Async Operations</h3>
+                <p>Leverages asyncio for high-performance, non-blocking data retrieval.</p>
+            </div>
+            <div class="feature-card">
+                <h3 class="text-xl font-semibold mb-2"><i class="fas fa-globe mr-2"></i> Global Coverage</h3>
+                <p>Access BIN data for 228 countries with a massive 30,000,000 record database.</p>
+            </div>
+            <div class="feature-card">
+                <h3 class="text-xl font-semibold mb-2"><i class="fas fa-memory mr-2"></i> Low Memory Footprint</h3>
+                <p>Optimized caching for minimal memory usage and blazing speed.</p>
+            </div>
+            <div class="feature-card">
+                <h3 class="text-xl font-semibold mb-2"><i class="fas fa-plug mr-2"></i> Easy Integration</h3>
+                <p>Seamless compatibility with bots, MTProto APIs, and Python scripts.</p>
+            </div>
+            <div class="feature-card">
+                <h3 class="text-xl font-semibold mb-2"><i class="fas fa-search mr-2"></i> Flexible Lookups</h3>
+                <p>Search by country code, bank name, or specific BIN with optional limits.</p>
+            </div>
+            <div class="feature-card">
+                <h3 class="text-xl font-semibold mb-2"><i class="fas fa-code mr-2"></i> Python 3.8+</h3>
+                <p>Compatible with Python 3.8 and all future versions for broad support.</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="docs" class="container mx-auto px-4 py-16">
+        <h2 class="text-3xl font-bold text-center mb-8 text-blue-600">Documentation</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="response-card p-6">
+                <h3 class="text-xl font-semibold mb-2">Basic Asyncio Example</h3>
+                <p>Simple example to perform BIN lookups using asyncio.</p>
+                <pre>import asyncio
+from smartbindb import SmartBinDB
+
+async def main():
+    smartdb = SmartBinDB()
+    print("What would you like to do?")
+    print("1. BIN lookup")
+    print("2. Bank based search")
+    print("3. Country based search")
+    choice = input("Enter your choice (1, 2, or 3): ")
+
+    if choice == "1":
+        bin_number = input("Enter BIN number: ")
+        result = await smartdb.get_bin_info(bin_number)
+        print("BIN info:", result)
+    elif choice == "2":
+        bank_name = input("Enter bank name: ")
+        use_limit = input("Do you want to use a limit? (yes/no): ").lower()
+        limit = None
+        if use_limit == "yes":
+            limit = int(input("Enter limit: "))
+        result = await smartdb.get_bins_by_bank(bank_name, limit)
+        print("Bank results:", result)
+    elif choice == "3":
+        country_code = input("Enter country code: ").upper()
+        use_limit = input("Do you want to use a limit? (yes/no): ").lower()
+        limit = None
+        if use_limit == "yes":
+            limit = int(input("Enter limit: "))
+        result = await smartdb.get_bins_by_country(country_code, limit)
+        print("Country results:", result)
+    else:
+        print("Invalid choice. Please select 1, 2, or 3.")
+
+if __name__ == "__main__":
+    asyncio.run(main())
+                </pre>
+            </div>
+            <div class="response-card p-6">
+                <h3 class="text-xl font-semibold mb-2">Pyrogram Integration Example</h3>
+                <p>Integrate SmartBinDB with a Telegram bot using Pyrogram.</p>
+                <pre>import asyncio
+import json
+import os
+import pycountry
+from pyrogram import Client, filters
+from pyrogram.enums import ParseMode
+from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from pyrogram.handlers import MessageHandler
+from smartbindb import SmartBinDB
+from telegraph import Telegraph
+
+def log_error(message):
+    print(f"[ERROR] {message}")
+
+COMMAND_PREFIX = ["/", ",", ".", "!", "#"]
+
+telegraph = Telegraph()
+try:
+    telegraph.create_account(
+        short_name="SmartUtilBot",
+        author_name="SmartUtilBot",
+        author_url="https://t.me/TheSmartDevs"
+    )
+except Exception as e:
+    log_error(f"Failed to create or access Telegraph account: {e}")
+
+async def fetch_bins(params, client=None, message=None, endpoint="country"):
+    try:
+        smartdb = SmartBinDB()
+        bins = []
+        if endpoint == "country":
+            result = await smartdb.get_bins_by_country(params.get("country", ""), params.get("limit"))
+            if result.get("status") == "SUCCESS":
+                bins = result.get("data", [])
+        elif endpoint == "bank":
+            result = await smartdb.get_bins_by_bank(params.get("bank", ""), params.get("limit"))
+            if result.get("status") == "SUCCESS":
+                bins = result.get("data", [])
+        if not bins:
+            log_error(f"No data returned for params {params}")
+            return []
+        return bins
+    except Exception as e:
+        log_error(f"Exception occurred while fetching data: {e}")
+        return []
+
+def process_bins_to_json(bins):
+    processed = []
+    for bin_data in bins:
+        processed.append({
+            "bin": bin_data.get("bin", "Unknown"),
+            "bank": bin_data.get("issuer", "Unknown"),
+            "country_code": bin_data.get("country_code", "Unknown"),
+            "brand": bin_data.get("brand", "Unknown"),
+            "category": bin_data.get("category", "Unknown"),
+            "type": bin_data.get("type", "Unknown"),
+            "website": bin_data.get("website", "")
+        })
+    return processed
+
+async def create_telegraph_page(content: str) -> list:
+    try:
+        truncated_content = content[:40000]
+        max_size_bytes = 20 * 1024
+        pages = []
+        page_content = ""
+        current_size = 0
+        lines = truncated_content.splitlines(keepends=True)
+
+        for line in lines:
+            line_bytes = line.encode('utf-8', errors='ignore')
+            if current_size + len(line_bytes) > max_size_bytes and page_content:
+                safe_content = page_content.replace('<', '&lt;').replace('>', '&gt;')
+                html_content = f'<pre>{safe_content}</pre>'
+                page = telegraph.create_page(
+                    title="SmartBins",
+                    html_content=html_content,
+                    author_name="SmartUtilBot",
+                    author_url="https://t.me/TheSmartDevs"
+                )
+                pages.append(page['url'])
+                page_content = ""
+                current_size = 0
+                await asyncio.sleep(0.5)
+
+            page_content += line
+            current_size += len(line_bytes)
+
+        if page_content:
+            safe_content = page_content.replace('<', '&lt;').replace('>', '&gt;')
+            html_content = f'<pre>{safe_content}</pre>'
+            page = telegraph.create_page(
+                title="SmartBins",
+                html_content=html_content,
+                author_name="SmartUtilBot",
+                author_url="https://t.me/TheSmartDevs"
+            )
+            pages.append(page['url'])
+            await asyncio.sleep(0.5)
+
+        return pages
+    except Exception as e:
+        log_error(f"Failed to create Telegraph page: {e}")
+        return []
+
+def generate_message(bins, identifier):
+    message = f"**Smart Tool - Bin database 📋**\n**━━━━━━━━━━━━━━━━━━**\n\n"
+    for i, bin_data in enumerate(bins[:5], start=1):
+        message += (f"{i}. **BIN:** `{bin_data['bin']}`\n"
+                    f"**Bank:** {bin_data['bank']}\n"
+                    f"**Country:** {bin_data['country_code']}\n\n")
+    return message
+
+async def bindb_handler(client, message):
+    try:
+        if len(message.command) != 2:
+            await client.send_message(message.chat.id, "**Please provide a country name or code. e.g. /bindb BD or /bindb Bangladesh**", parse_mode=ParseMode.MARKDOWN)
+            return
+
+        country_input = message.command[1].upper()
+        if country_input in ["UK", "UNITED KINGDOM"]:
+            country_code = "GB"
+            country_name = "United Kingdom"
+        else:
+            country = pycountry.countries.search_fuzzy(country_input)[0] if len(country_input) > 2 else pycountry.countries.get(alpha_2=country_input)
+            if not country:
+                await client.send_message(message.chat.id, "**Invalid country name or code**", parse_mode=ParseMode.MARKDOWN)
+                return
+            country_code = country.alpha_2.upper()
+            country_name = country.name
+
+        loading_message = await client.send_message(message.chat.id, f"**Finding Bins With Country {country_name}...**", parse_mode=ParseMode.MARKDOWN)
+
+        params = {"country": country_code, "limit": 2000}
+        bins = await fetch_bins(params, client=client, message=message, endpoint="country")
+        if not bins:
+            await client.edit_message_text(message.chat.id, loading_message.id, "**Sorry No Bins Found**", parse_mode=ParseMode.MARKDOWN)
+            return
+
+        processed_bins = process_bins_to_json(bins)
+        message_text = generate_message(processed_bins, country_code)
+
+        keyboard = None
+        if len(processed_bins) > 5:
+            bins_content = json.dumps(processed_bins[5:], indent=2)
+            content_size = len(bins_content.encode('utf-8'))
+            telegraph_urls = await create_telegraph_page(bins_content)
+            if telegraph_urls:
+                buttons = []
+                if content_size <= 20 * 1024:
+                    buttons.append([InlineKeyboardButton("Full Output", url=telegraph_urls[0])])
+                else:
+                    for i in range(0, len(telegraph_urls), 2):
+                        row = [
+                            InlineKeyboardButton(f"Output {i+1}", url=telegraph_urls[i])
+                        ]
+                        if i + 1 < len(telegraph_urls):
+                            row.append(InlineKeyboardButton(f"Output {i+2}", url=telegraph_urls[i+1]))
+                        buttons.append(row)
+                keyboard = InlineKeyboardMarkup(buttons)
+
+        await client.edit_message_text(message.chat.id, loading_message.id, message_text, reply_markup=keyboard, parse_mode=ParseMode.MARKDOWN)
+    except Exception as e:
+        log_error(f"Exception in bindb_handler: {e}")
+        await client.edit_message_text(message.chat.id, loading_message.id, "**Sorry, an error occurred while fetching BIN data ❌**", parse_mode=ParseMode.MARKDOWN)
+
+async def binbank_handler(client, message):
+    try:
+        if len(message.command) < 2:
+            await client.send_message(message.chat.id, "**Please provide a bank name. e.g. /binbank Pubali**", parse_mode=ParseMode.MARKDOWN)
+            return
+
+        bank_name = ' '.join(message.command[1:]).title()
+        loading_message = await client.send_message(message.chat.id, f"**Finding Bins With Bank {bank_name}...**", parse_mode=ParseMode.MARKDOWN)
+
+        params = {"bank": bank_name, "limit": 2000}
+        bins = await fetch_bins(params, client=client, message=message, endpoint="bank")
+        if not bins:
+            await client.edit_message_text(message.chat.id, loading_message.id, "**Sorry No Bins Found**", parse_mode=ParseMode.MARKDOWN)
+            return
+
+        processed_bins = process_bins_to_json(bins)
+        message_text = generate_message(processed_bins, bank_name)
+
+        keyboard = None
+        if len(processed_bins) > 5:
+            bins_content = json.dumps(processed_bins[5:], indent=2)
+            content_size = len(bins_content.encode('utf-8'))
+            telegraph_urls = await create_telegraph_page(bins_content)
+            if telegraph_urls:
+                buttons = []
+                if content_size <= 20 * 1024:
+                    buttons.append([InlineKeyboardButton("Full Output", url=telegraph_urls[0])])
+                else:
+                    for i in range(0, len(telegraph_urls), 2):
+                        row = [
+                            InlineKeyboardButton(f"Output {i+1}", url=telegraph_urls[i])
+                        ]
+                        if i + 1 < len(telegraph_urls):
+                            row.append(InlineKeyboardButton(f"Output {i+2}", url=telegraph_urls[i+1]))
+                        buttons.append(row)
+                keyboard = InlineKeyboardMarkup(buttons)
+
+        await client.edit_message_text(message.chat.id, loading_message.id, message_text, reply_markup=keyboard, parse_mode=ParseMode.MARKDOWN)
+    except Exception as e:
+        log_error(f"Exception in binbank_handler: {e}")
+        await client.edit_message_text(message.chat.id, loading_message.id, "**Sorry, an error occurred while fetching BIN data ❌**", parse_mode=ParseMode.MARKDOWN)
+
+def setup_db_handlers(app: Client):
+    app.add_handler(MessageHandler(bindb_handler, filters.command(["bindb"], prefixes=COMMAND_PREFIX) & (filters.private | filters.group)))
+    app.add_handler(MessageHandler(binbank_handler, filters.command(["binbank"], prefixes=COMMAND_PREFIX) & (filters.private | filters.group)))
+
+if __name__ == "__main__":
+    app = Client(
+        "SmartBinDBBot",
+        api_id=API_ID,
+        api_hash="API_HASH",
+        bot_token="BOT_TOKEN"
+    )
+    setup_db_handlers(app)
+    app.run()
+                </pre>
+            </div>
+        </div>
+    </section>
+
+    <section id="developer" class="container mx-auto px-4 py-16 text-center">
+        <h2 class="text-3xl font-bold mb-8 text-blue-600">The Architect Of This Library </h2>
+        <div class="response-card p-6 max-w-md mx-auto">
+            <i class="fas fa-user text-blue-500 text-4xl mb-3"></i>
+            <h3 class="text-xl font-semibold">Abir Arafat Chawdhury</h3>
+            <p>Crafted with passion by <a href="https://t.me/ISmartCoder" target="_blank" class="text-blue-400 hover:text-blue-300">@ISmartCoder</a></p>
+            <p>Join the <a href="https://t.me/TheSmartDevs" target="_blank" class="text-blue-400 hover:text-blue-300">Updates Channel</a> for the latest news!</p>
+            <a href="https://t.me/TheSmartDevs" class="inline-block bg-blue-500 text-white px-6 py-3 rounded-full mt-4 hover:bg-blue-600 transition">Join Now</a>
+        </div>
+    </section>
+
+    <footer class="bg-gray-100 bg-opacity-90 py-8 text-center">
+        <p class="text-gray-800">Built with ❤️ by <a href="https://t.me/ISmartCoder" target="_blank" class="text-blue-400 hover:text-blue-300"><i class="fa-brands fa-telegram"></i> @ISmartCoder</a></p>
+        <p class="text-gray-800">Join our community at <a href="https://t.me/TheSmartDevs" target="_blank" class="text-blue-400 hover:text-blue-300"><i class="fa-brands fa-telegram"></i> @TheSmartDevs</a></p>
+        <p class="text-gray-800">© 2025 SmartBinDB Library</p>
+        <div class="social-icons mt-4">
+            <a href="https://t.me/TheSmartDevs" target="_blank"><i class="fa-brands fa-telegram"></i></a>
+            <a href="https://x.com/abirxdhackz" target="_blank"><i class="fa-brands fa-twitter"></i></a>
+            <a href="https://github.com/TheSmartDevs" target="_blank"><i class="fa-brands fa-github"></i></a>
+            <a href="https://facebook.com/abirxdhackz" target="_blank"><i class="fa-brands fa-facebook-f"></i></a>
+            <a href="https://instagram.com/abirxdhackz" target="_blank"><i class="fa-brands fa-instagram"></i></a>
+            <a href="https://youtube.com/@abirxdhackz" target="_blank"><i class="fa-brands fa-youtube"></i></a>
+        </div>
+    </footer>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ canvas, alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        camera.position.z = 5;
+
+        const particles = new THREE.Group();
+        for (let i = 0; i < 200; i++) {
+            const geometry = new THREE.SphereGeometry(0.02, 16, 16);
+            const material = new THREE.MeshBasicMaterial({ color: 0x3b82f6 });
+            const particle = new THREE.Mesh(geometry, material);
+            particle.position.set(
+                (Math.random() - 0.5) * 10,
+                (Math.random() - 0.5) * 10,
+                (Math.random() - 0.5) * 10
+            );
+            particles.add(particle);
+        }
+        scene.add(particles);
+
+        function animate() {
+            requestAnimationFrame(animate);
+            particles.rotation.y += 0.002;
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('active');
+        }
+    </script>
+</body>
+</html>
