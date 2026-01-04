@@ -6,539 +6,655 @@
     <meta name="description" content="SmartBinDB - A powerful asynchronous Python library for retrieving BIN database information by country or bank name.">
     <meta property="og:title" content="SmartBinDB Library">
     <meta property="og:description" content="Explore the SmartBinDB library for fast, asynchronous BIN lookups with a sleek, modern interface.">
+    <meta name="theme-color" content="#0a0a0f">
     <title>SmartBinDB - Ultimate BIN Database Library</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous">
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@300;400&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://pro.fontawesome.com/releases/v6.0.0-beta3/css/all.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
     <style>
-        body {
-            font-family: 'Roboto', sans-serif;
-            background: linear-gradient(180deg, #ffffff 0%, #e0e0ff 100%);
-            color: #333333;
-            overflow-x: hidden;
-            position: relative;
+        *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+        :root{
+            --primary-gold:#FFD700;
+            --primary-gold-dark:#FFB300;
+            --accent-cyan:#00FFF5;
+            --accent-cyan-dark:#00CCC4;
+            --accent-purple:#9D4EDD;
+            --text-primary:#FFFFFF;
+            --text-secondary:#B8B8B8;
+            --text-muted:#6B7280;
+            --bg-dark:#0A0A0F;
+            --bg-darker:#050508;
+            --bg-card:#16161F;
+            --bg-card-hover:#1E1E2D;
+            --border-color:rgba(255,255,255,0.1);
+            --border-highlight:rgba(255,215,0,0.3);
+            --glow-gold:0 0 30px rgba(255,215,0,0.3);
+            --glow-cyan:0 0 30px rgba(0,255,245,0.3);
+            --glow-purple:0 0 30px rgba(157,78,221,0.3);
+            --gradient-gold:linear-gradient(135deg,var(--primary-gold) 0%,var(--accent-cyan) 100%);
+            --gradient-purple:linear-gradient(135deg,var(--accent-purple) 0%,var(--accent-cyan) 100%);
+            --font-sans:'Plus Jakarta Sans',system-ui,-apple-system,sans-serif;
+            --font-display:'Space Grotesk',system-ui,sans-serif;
+            --font-mono:'JetBrains Mono',monospace;
+            --radius-sm:8px;
+            --radius-md:12px;
+            --radius-lg:16px;
+            --radius-xl:24px;
         }
-        .hero {
-            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%"><defs><filter id="glow"><feGaussianBlur stdDeviation="3.5" result="coloredBlur"/><feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><rect width="100%" height="100%" fill="none" filter="glow"/></svg>'), linear-gradient(135deg, #e0e0ff, #3b82f6);
-            clip-path: polygon(0 0, 100% 0, 100% 85%, 0 100%);
-            padding: 150px 0;
-            text-align: center;
+        html{scroll-behavior:smooth;-webkit-font-smoothing:antialiased}
+        body{
+            font-family:var(--font-sans);
+            background:var(--bg-dark);
+            background-image:
+                radial-gradient(at 20% 10%,rgba(157,78,221,0.15) 0px,transparent 50%),
+                radial-gradient(at 80% 90%,rgba(0,255,245,0.1) 0px,transparent 50%),
+                radial-gradient(at 50% 50%,rgba(255,215,0,0.05) 0px,transparent 50%);
+            color:var(--text-primary);
+            line-height:1.6;
+            overflow-x:hidden;
+            min-height:100vh;
         }
-        h1, h2 {
-            font-family: 'Orbitron', sans-serif;
-            text-shadow: 0 0 10px rgba(59, 130, 246, 0.7);
+        .animated-bg{position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;opacity:0.6;pointer-events:none}
+        .animated-bg span{position:absolute;border-radius:50%;background:linear-gradient(45deg,var(--accent-cyan),var(--accent-purple));animation:float 15s infinite ease-in-out;opacity:0.2;filter:blur(60px)}
+        .animated-bg span:nth-child(1){width:300px;height:300px;top:10%;left:10%;animation-delay:0s}
+        .animated-bg span:nth-child(2){width:400px;height:400px;top:60%;right:10%;animation-delay:3s}
+        .animated-bg span:nth-child(3){width:350px;height:350px;bottom:10%;left:50%;animation-delay:6s}
+        @keyframes float{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(50px,-50px) scale(1.1)}66%{transform:translate(-30px,30px) scale(0.9)}}
+        #canvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none}
+        .content-wrapper{position:relative;z-index:2}
+        .container{max-width:1200px;margin:0 auto;padding:0 20px}
+        .hero{padding:60px 0 40px;text-align:center;border-bottom:1px solid var(--border-color);animation:slideUp 0.8s ease-out forwards}
+        @keyframes slideUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+        .hero-badge{display:inline-flex;align-items:center;gap:10px;padding:10px 20px;background:linear-gradient(135deg,var(--bg-card),var(--bg-card-hover));border:1px solid var(--border-color);border-radius:50px;font-size:0.9rem;font-weight:600;margin-bottom:20px;box-shadow:var(--glow-cyan);color:var(--text-primary)}
+        .hero-badge i{font-size:1.1rem;color:var(--accent-cyan)}
+        .hero-title{font-family:var(--font-display);font-size:clamp(2.2rem,5vw,3.5rem);font-weight:700;line-height:1.1;margin-bottom:16px;background:linear-gradient(135deg,var(--primary-gold) 0%,var(--accent-cyan) 50%,var(--accent-purple) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-shadow:0 0 80px rgba(255,215,0,0.5)}
+        .hero-description{font-size:1.1rem;color:var(--text-secondary);margin:0 auto 24px;max-width:600px;line-height:1.7}
+        .hero-stats{display:flex;justify-content:center;gap:12px;margin-bottom:24px;flex-wrap:wrap}
+        .stat-item{display:flex;flex-direction:column;align-items:center;padding:16px 20px;background:linear-gradient(135deg,var(--bg-card),var(--bg-card-hover));border:1px solid var(--border-color);border-radius:16px;min-width:100px;transition:all 0.3s ease}
+        .stat-item:hover{transform:translateY(-5px);border-color:var(--primary-gold);box-shadow:var(--glow-gold)}
+        .stat-icon{width:40px;height:40px;display:flex;align-items:center;justify-content:center;background:var(--gradient-gold);border-radius:12px;margin-bottom:8px;box-shadow:var(--glow-gold)}
+        .stat-icon i{font-size:1.2rem;color:var(--bg-dark)}
+        .stat-number{font-size:1.5rem;font-weight:800;background:var(--gradient-gold);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1}
+        .stat-label{font-size:0.75rem;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;margin-top:4px}
+        .hero-actions{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-bottom:20px}
+        .btn{display:inline-flex;align-items:center;gap:10px;padding:14px 28px;border-radius:14px;font-size:1rem;font-weight:700;text-decoration:none;transition:all 0.3s;cursor:pointer;border:none}
+        .btn-primary{background:linear-gradient(135deg,var(--primary-gold),var(--primary-gold-dark));color:var(--bg-dark);box-shadow:var(--glow-gold)}
+        .btn-primary:hover{transform:translateY(-4px);box-shadow:0 15px 50px rgba(255,215,0,0.5)}
+        .btn-secondary{background:linear-gradient(135deg,var(--accent-cyan),var(--accent-cyan-dark));color:var(--bg-dark);box-shadow:var(--glow-cyan)}
+        .btn-secondary:hover{transform:translateY(-4px);box-shadow:0 15px 50px rgba(0,255,245,0.5)}
+        .installation-box{background:var(--bg-card);border:1px solid var(--border-color);border-radius:var(--radius-md);padding:16px 20px;display:inline-flex;align-items:center;gap:16px}
+        .installation-code{font-family:var(--font-mono);font-size:0.95rem;color:var(--accent-cyan)}
+        .copy-btn{width:40px;height:40px;display:flex;align-items:center;justify-content:center;background:var(--bg-card-hover);border:1px solid var(--border-color);border-radius:var(--radius-sm);color:var(--text-secondary);cursor:pointer;transition:all 0.2s}
+        .copy-btn:hover{border-color:var(--primary-gold);color:var(--primary-gold)}
+        .copied{color:var(--accent-cyan) !important}
+        .section{padding:50px 0}
+        .section-header{text-align:center;margin-bottom:32px}
+        .section-badge{display:inline-flex;align-items:center;gap:8px;padding:8px 16px;background:linear-gradient(135deg,var(--bg-card),var(--bg-card-hover));border:1px solid var(--border-highlight);border-radius:50px;font-size:0.8rem;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:12px;color:var(--primary-gold)}
+        .section-badge i{font-size:1rem}
+        .section-title{font-family:var(--font-display);font-size:clamp(1.8rem,4vw,2.5rem);font-weight:700;margin-bottom:12px;background:var(--gradient-gold);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+        .section-description{font-size:1rem;color:var(--text-secondary);max-width:600px;margin:0 auto}
+        .features-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;max-width:1000px;margin:0 auto}
+        .feature-card{background:linear-gradient(135deg,var(--bg-card),var(--bg-card-hover));border:1px solid var(--border-color);border-radius:var(--radius-lg);padding:24px;transition:all 0.3s;text-align:center}
+        .feature-card:hover{transform:translateY(-6px);border-color:var(--primary-gold);box-shadow:0 15px 40px rgba(255,215,0,0.2)}
+        .feature-icon{width:55px;height:55px;display:flex;align-items:center;justify-content:center;background:var(--gradient-purple);border-radius:14px;font-size:1.5rem;margin:0 auto 16px;box-shadow:var(--glow-purple)}
+        .feature-icon i{color:var(--text-primary)}
+        .feature-title{font-family:var(--font-display);font-size:1.1rem;font-weight:600;margin-bottom:8px}
+        .feature-description{color:var(--text-secondary);font-size:0.9rem;line-height:1.6}
+        .docs-section{background:var(--bg-card);border-top:1px solid var(--border-color);border-bottom:1px solid var(--border-color)}
+        .docs-grid{display:grid;gap:24px}
+        @media(min-width:1024px){.docs-grid{grid-template-columns:repeat(2,1fr)}}
+        .code-editor{background:#0d1117;border:1px solid #30363d;border-radius:var(--radius-lg);overflow:hidden;box-shadow:0 16px 70px rgba(0,0,0,0.5)}
+        .code-editor-header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:#161b22;border-bottom:1px solid #30363d}
+        .code-editor-dots{display:flex;gap:8px}
+        .code-editor-dot{width:12px;height:12px;border-radius:50%}
+        .code-editor-dot.red{background:#ff5f56}
+        .code-editor-dot.yellow{background:#ffbd2e}
+        .code-editor-dot.green{background:#27ca40}
+        .code-editor-title{display:flex;align-items:center;gap:10px;font-family:var(--font-mono);font-size:0.8rem;color:#8b949e}
+        .code-editor-title i{color:var(--primary-gold);font-size:1rem}
+        .code-editor-actions{display:flex;gap:8px}
+        .code-editor-btn{width:32px;height:32px;display:flex;align-items:center;justify-content:center;background:transparent;border:1px solid #30363d;border-radius:6px;color:#8b949e;cursor:pointer;transition:all 0.2s;font-size:0.85rem}
+        .code-editor-btn:hover{border-color:var(--primary-gold);color:var(--primary-gold);background:rgba(255,215,0,0.1)}
+        .code-editor-btn.copied{border-color:var(--accent-cyan);color:var(--accent-cyan)}
+        .code-editor-tabs{display:flex;background:#0d1117;border-bottom:1px solid #30363d}
+        .code-tab{padding:10px 20px;font-family:var(--font-mono);font-size:0.75rem;color:#8b949e;background:transparent;border:none;border-bottom:2px solid transparent;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;gap:8px}
+        .code-tab:hover{color:#c9d1d9;background:rgba(255,255,255,0.03)}
+        .code-tab.active{color:var(--primary-gold);border-bottom-color:var(--primary-gold);background:#161b22}
+        .code-tab i{font-size:0.9rem}
+        .code-editor-body{display:flex;max-height:420px;overflow:hidden}
+        .line-numbers{padding:16px 0;background:#0d1117;border-right:1px solid #30363d;user-select:none;min-width:50px;text-align:right}
+        .line-numbers span{display:block;padding:0 12px;font-family:var(--font-mono);font-size:0.8rem;line-height:1.7;color:#484f58}
+        .code-content{flex:1;padding:16px 20px;overflow:auto;background:#0d1117}
+        .code-content::-webkit-scrollbar{width:8px;height:8px}
+        .code-content::-webkit-scrollbar-track{background:#0d1117}
+        .code-content::-webkit-scrollbar-thumb{background:#30363d;border-radius:4px}
+        .code-content::-webkit-scrollbar-thumb:hover{background:#484f58}
+        .code-content pre{font-family:var(--font-mono);font-size:0.8rem;line-height:1.7;color:#c9d1d9;white-space:pre;margin:0}
+        .code-content .keyword{color:#ff7b72}
+        .code-content .function{color:#d2a8ff}
+        .code-content .string{color:#a5d6ff}
+        .code-content .number{color:#79c0ff}
+        .code-content .comment{color:#8b949e;font-style:italic}
+        .code-content .class{color:#ffa657}
+        .code-content .operator{color:#ff7b72}
+        .code-content .builtin{color:#79c0ff}
+        .code-content .decorator{color:#d2a8ff}
+        .code-content .param{color:#ffa657}
+        .code-status{display:flex;align-items:center;justify-content:space-between;padding:8px 16px;background:#161b22;border-top:1px solid #30363d;font-family:var(--font-mono);font-size:0.7rem;color:#8b949e}
+        .code-status-left{display:flex;align-items:center;gap:16px}
+        .code-status-item{display:flex;align-items:center;gap:6px}
+        .code-status-item i{font-size:0.8rem}
+        .code-status-dot{width:8px;height:8px;border-radius:50%;background:#3fb950}
+        .developer-card{max-width:420px;margin:0 auto;background:linear-gradient(135deg,var(--bg-card),var(--bg-card-hover));border:1px solid var(--border-color);border-radius:var(--radius-xl);padding:40px;text-align:center;position:relative;overflow:hidden}
+        .developer-card::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:conic-gradient(from 0deg,transparent,rgba(255,215,0,0.1),transparent 30%);animation:rotate 8s linear infinite}
+        @keyframes rotate{to{transform:rotate(360deg)}}
+        .developer-card-inner{position:relative;z-index:1}
+        .developer-avatar{width:90px;height:90px;background:var(--gradient-gold);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:2.2rem;color:var(--bg-dark);box-shadow:var(--glow-gold)}
+        .developer-name{font-family:var(--font-display);font-size:1.4rem;font-weight:700;margin-bottom:6px}
+        .developer-handle{color:var(--accent-cyan);font-size:0.9rem;margin-bottom:12px}
+        .developer-bio{color:var(--text-secondary);font-size:0.9rem;margin-bottom:20px;line-height:1.6}
+        .developer-links{display:flex;justify-content:center;gap:10px;flex-wrap:wrap}
+        .dev-link{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;background:var(--bg-card-hover);border:1px solid var(--border-color);border-radius:var(--radius-sm);color:var(--text-primary);text-decoration:none;font-size:0.85rem;font-weight:500;transition:all 0.2s}
+        .dev-link:hover{border-color:var(--primary-gold);background:rgba(255,215,0,0.1)}
+        .dev-link i{font-size:1rem;color:var(--primary-gold)}
+        .footer{padding:40px 0 20px;background:var(--bg-card);border-top:1px solid var(--border-color)}
+        .footer-content{display:flex;flex-direction:column;align-items:center;gap:20px}
+        .footer-brand{display:flex;align-items:center;gap:12px;font-family:var(--font-display);font-size:1.4rem;font-weight:700;color:var(--text-primary);text-decoration:none}
+        .footer-brand-icon{width:40px;height:40px;background:var(--gradient-gold);border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;box-shadow:var(--glow-gold)}
+        .footer-brand-icon i{font-size:1.2rem;color:var(--bg-dark)}
+        .footer-text{color:var(--text-muted);font-size:0.9rem;text-align:center;line-height:1.7}
+        .footer-text a{color:var(--accent-cyan);text-decoration:none;font-weight:600}
+        .footer-text a:hover{color:var(--primary-gold)}
+        .footer-text strong{background:var(--gradient-gold);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-weight:700}
+        .social-links{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+        .social-link{width:44px;height:44px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.05);border:1px solid var(--border-color);border-radius:50%;color:var(--text-primary);font-size:1.2rem;transition:all 0.3s;text-decoration:none}
+        .social-link:hover{background:var(--gradient-gold);color:var(--bg-dark);transform:translateY(-4px) rotate(10deg);box-shadow:var(--glow-gold)}
+        .copyright{color:var(--text-muted);font-size:0.8rem;padding-top:20px;border-top:1px solid var(--border-color);margin-top:10px;text-align:center;width:100%}
+        .scroll-top{position:fixed;bottom:24px;right:24px;width:48px;height:48px;background:var(--gradient-gold);border:none;border-radius:var(--radius-sm);color:var(--bg-dark);font-size:1.2rem;cursor:pointer;z-index:50;opacity:0;visibility:hidden;transition:all 0.3s;box-shadow:var(--glow-gold);display:flex;align-items:center;justify-content:center}
+        .scroll-top.visible{opacity:1;visibility:visible}
+        .scroll-top:hover{transform:translateY(-4px);box-shadow:0 15px 50px rgba(255,215,0,0.5)}
+        @media(max-width:768px){
+            .hero{padding:40px 0 30px}
+            .section{padding:40px 0}
+            .developer-card{padding:30px}
+            .footer{padding:30px 0 15px}
+            .features-grid{grid-template-columns:repeat(3,1fr);gap:12px}
+            .feature-card{padding:16px}
+            .feature-icon{width:45px;height:45px;font-size:1.2rem}
+            .feature-title{font-size:0.95rem}
+            .feature-description{font-size:0.8rem}
+            .code-editor-body{flex-direction:column;max-height:380px}
+            .line-numbers{display:none}
+            .code-content{padding:12px 16px}
+            .code-content pre{font-size:0.7rem}
         }
-        .navbar {
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(10px);
-            position: sticky;
-            top: 0;
-            z-index: 50;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        @media(max-width:540px){
+            .features-grid{grid-template-columns:repeat(3,1fr);gap:8px}
+            .feature-card{padding:12px}
+            .feature-icon{width:40px;height:40px;font-size:1rem;margin-bottom:10px;border-radius:10px}
+            .feature-title{font-size:0.85rem;margin-bottom:4px}
+            .feature-description{font-size:0.7rem;line-height:1.4}
         }
-        .nav-link {
-            transition: color 0.3s, transform 0.3s;
-        }
-        .nav-link:hover {
-            color: #3b82f6;
-            transform: scale(1.1);
-        }
-        .sidebar {
-            background: rgba(255, 255, 255, 0.95);
-            position: fixed;
-            top: 0;
-            left: -250px;
-            width: 250px;
-            height: 100%;
-            transition: left 0.3s ease;
-            z-index: 100;
-            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
-        }
-        .sidebar.active {
-            left: 0;
-        }
-        .sidebar a {
-            display: block;
-            padding: 15px 20px;
-            color: #333333;
-            transition: background 0.2s, transform 0.2s;
-        }
-        .sidebar a:hover {
-            background: #3b82f6;
-            color: #ffffff;
-            transform: translateX(10px);
-        }
-        .toggle-btn {
-            font-size: 1.5rem;
-            cursor: pointer;
-            color: #333333;
-        }
-        .input-panel {
-            background: rgba(255, 255, 255, 0.9);
-            border: 1px solid #3b82f6;
-            border-radius: 15px;
-            padding: 20px;
-            box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
-            transition: transform 0.3s;
-        }
-        .input-panel:hover {
-            transform: translateY(-5px);
-        }
-        .feature-card {
-            background: rgba(255, 255, 255, 0.95);
-            border: 1px solid #3b82f6;
-            border-radius: 10px;
-            padding: 20px;
-            transition: transform 0.3s;
-        }
-        .feature-card:hover {
-            transform: scale(1.05);
-        }
-        .response-card {
-            background: rgba(255, 255, 255, 0.95);
-            border: 1px solid #3b82f6;
-            border-radius: 10px;
-            padding: 20px;
-            animation: fadeIn 0.5s ease-in;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .social-icons a {
-            font-size: 2rem;
-            margin: 0 15px;
-            transition: transform 0.3s, filter 0.3s;
-            color: #333333;
-        }
-        .social-icons a:hover {
-            transform: scale(1.2);
-            filter: drop-shadow(0 0 10px #3b82f6);
-        }
-        #canvas {
-            position: fixed;
-            top: 0;
-            left: 0;
-            z-index: -1;
-            opacity: 0.3;
-        }
-        pre {
-            background: #ffffff !important;
-            color: #333333;
-            padding: 16px;
-            border-radius: 8px;
-            font-family: 'Courier New', Courier, monospace;
-            white-space: pre-wrap;
-            border: 1px solid #3b82f6;
-            box-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
-        }
-        pre strong {
-            color: #3b82f6;
-        }
-        pre .string { color: #34d399; }
-        pre .number { color: #f59e0b; }
-        pre .boolean { color: #f472b6; }
-        pre .null { color: #94a3b8; }
-        pre .key { color: #3b82f6; }
     </style>
 </head>
 <body>
+    <div class="animated-bg">
+        <span></span>
+        <span></span>
+        <span></span>
+    </div>
     <canvas id="canvas"></canvas>
 
-    <div class="sidebar" id="sidebar">
-        <a href="#" class="text-xl font-bold text-blue-600 p-4 border-b border-gray-200"><i class="fas fa-database mr-2"></i> SmartBinDB</a>
-        <a href="#features" class="nav-link"><i class="fas fa-star mr-2"></i> Features</a>
-        <a href="#docs" class="nav-link"><i class="fas fa-book mr-2"></i> Documentation</a>
-        <a href="#developer" class="nav-link"><i class="fas fa-user mr-2"></i> Developer</a>
-        <a href="https://t.me/TheSmartDevs" target="_blank" class="nav-link"><i class="fas fa-paper-plane mr-2"></i> Updates</a>
+    <div class="content-wrapper">
+        <header class="hero">
+            <div class="container">
+                <div class="hero-badge"><i class="fad fa-bolt"></i> High Performance Python Library</div>
+                <h1 class="hero-title">The Ultimate BIN Database Solution for Python</h1>
+                <p class="hero-description">Unlock lightning-fast, asynchronous BIN lookups with SmartBinDB. Access comprehensive financial data across 228 countries with a database of 30 million+ records.</p>
+                <div class="hero-stats">
+                    <div class="stat-item">
+                        <div class="stat-icon"><i class="fad fa-globe"></i></div>
+                        <span class="stat-number">228</span>
+                        <span class="stat-label">Countries</span>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-icon"><i class="fad fa-database"></i></div>
+                        <span class="stat-number">30M+</span>
+                        <span class="stat-label">Records</span>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-icon"><i class="fad fa-clock"></i></div>
+                        <span class="stat-number">&lt;50ms</span>
+                        <span class="stat-label">Response</span>
+                    </div>
+                </div>
+                <div class="hero-actions">
+                    <a href="#docs" class="btn btn-primary"><i class="fad fa-rocket-launch"></i> Get Started</a>
+                    <a href="https://pypi.org/project/smartbindb" target="_blank" class="btn btn-secondary"><i class="fab fa-github"></i> GitHub</a>
+                </div>
+                <div class="installation-box">
+                    <code class="installation-code">pip install smartbindb</code>
+                    <button class="copy-btn" onclick="copyToClipboard('pip install smartbindb', this)"><i class="fad fa-copy"></i></button>
+                </div>
+            </div>
+        </header>
+
+        <section id="features" class="section">
+            <div class="container">
+                <div class="section-header">
+                    <div class="section-badge"><i class="fad fa-sparkles"></i> Features</div>
+                    <h2 class="section-title">Built for Modern Applications</h2>
+                    <p class="section-description">Everything you need to integrate powerful BIN lookup capabilities into your Python applications.</p>
+                </div>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon"><i class="fad fa-rocket-launch"></i></div>
+                        <h3 class="feature-title">Superfast Async</h3>
+                        <p class="feature-description">Leverages asyncio for high-performance, non-blocking data retrieval.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon"><i class="fad fa-globe"></i></div>
+                        <h3 class="feature-title">Global Coverage</h3>
+                        <p class="feature-description">Access BIN data for 228 countries with comprehensive coverage.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon"><i class="fad fa-memory"></i></div>
+                        <h3 class="feature-title">Low Memory</h3>
+                        <p class="feature-description">Optimized caching for minimal memory usage and blazing speed.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon"><i class="fad fa-plug"></i></div>
+                        <h3 class="feature-title">Easy Integration</h3>
+                        <p class="feature-description">Seamless compatibility with bots, APIs, and Python scripts.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon"><i class="fad fa-search"></i></div>
+                        <h3 class="feature-title">Flexible Lookups</h3>
+                        <p class="feature-description">Search by country, bank name, or specific BIN with limits.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon"><i class="fad fa-code"></i></div>
+                        <h3 class="feature-title">Python 3.9+</h3>
+                        <p class="feature-description">Compatible with Python 3.9 and all future versions.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="docs" class="section docs-section">
+            <div class="container">
+                <div class="section-header">
+                    <div class="section-badge"><i class="fad fa-book-open"></i> Documentation</div>
+                    <h2 class="section-title">Quick Start Guide</h2>
+                    <p class="section-description">Get up and running with SmartBinDB in minutes.</p>
+                </div>
+                <div class="docs-grid">
+                    <div class="code-editor">
+                        <div class="code-editor-header">
+                            <div class="code-editor-dots">
+                                <div class="code-editor-dot red"></div>
+                                <div class="code-editor-dot yellow"></div>
+                                <div class="code-editor-dot green"></div>
+                            </div>
+                            <div class="code-editor-title">
+                                <i class="fab fa-python"></i>
+                                <span>basic_example.py</span>
+                            </div>
+                            <div class="code-editor-actions">
+                                <button class="code-editor-btn" onclick="copyCodeBlock(this, 'code1')" title="Copy code"><i class="fad fa-copy"></i></button>
+                            </div>
+                        </div>
+                        <div class="code-editor-tabs">
+                            <button class="code-tab active"><i class="fab fa-python"></i> main.py</button>
+                        </div>
+                        <div class="code-editor-body">
+                            <div class="line-numbers">
+                                <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span>
+                            </div>
+                            <div class="code-content">
+                                <pre id="code1"><span class="keyword">import</span> asyncio
+<span class="keyword">from</span> smartbindb <span class="keyword">import</span> SmartBinDB
+
+<span class="keyword">async</span> <span class="keyword">def</span> <span class="function">main</span>():
+    smartdb = <span class="class">SmartBinDB</span>()
+    <span class="builtin">print</span>(<span class="string">"What would you like to do?"</span>)
+    <span class="builtin">print</span>(<span class="string">"1. BIN lookup"</span>)
+    <span class="builtin">print</span>(<span class="string">"2. Bank based search"</span>)
+    <span class="builtin">print</span>(<span class="string">"3. Country based search"</span>)
+    choice = <span class="builtin">input</span>(<span class="string">"Enter your choice (1, 2, or 3): "</span>)
+
+    <span class="keyword">if</span> choice == <span class="string">"1"</span>:
+        bin_number = <span class="builtin">input</span>(<span class="string">"Enter BIN number: "</span>)
+        result = <span class="keyword">await</span> smartdb.<span class="function">get_bin_info</span>(bin_number)
+        <span class="builtin">print</span>(<span class="string">"BIN info:"</span>, result)
+    <span class="keyword">elif</span> choice == <span class="string">"2"</span>:
+        bank_name = <span class="builtin">input</span>(<span class="string">"Enter bank name: "</span>)
+        use_limit = <span class="builtin">input</span>(<span class="string">"Use limit? (yes/no): "</span>).lower()
+        limit = <span class="keyword">None</span>
+        <span class="keyword">if</span> use_limit == <span class="string">"yes"</span>:
+            limit = <span class="builtin">int</span>(<span class="builtin">input</span>(<span class="string">"Enter limit: "</span>))
+        result = <span class="keyword">await</span> smartdb.<span class="function">get_bins_by_bank</span>(bank_name, limit)
+        <span class="builtin">print</span>(<span class="string">"Bank results:"</span>, result)
+    <span class="keyword">elif</span> choice == <span class="string">"3"</span>:
+        country_code = <span class="builtin">input</span>(<span class="string">"Enter country code: "</span>).upper()
+        use_limit = <span class="builtin">input</span>(<span class="string">"Use limit? (yes/no): "</span>).lower()
+        limit = <span class="keyword">None</span>
+        <span class="keyword">if</span> use_limit == <span class="string">"yes"</span>:
+            limit = <span class="builtin">int</span>(<span class="builtin">input</span>(<span class="string">"Enter limit: "</span>))
+        result = <span class="keyword">await</span> smartdb.<span class="function">get_bins_by_country</span>(country_code, limit)
+        <span class="builtin">print</span>(<span class="string">"Country results:"</span>, result)
+    <span class="keyword">else</span>:
+        <span class="builtin">print</span>(<span class="string">"Invalid choice."</span>)
+
+<span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:
+    asyncio.<span class="function">run</span>(<span class="function">main</span>())</pre>
+                            </div>
+                        </div>
+                        <div class="code-status">
+                            <div class="code-status-left">
+                                <div class="code-status-item"><div class="code-status-dot"></div> Ready</div>
+                                <div class="code-status-item"><i class="fad fa-code-branch"></i> Python 3.8+</div>
+                            </div>
+                            <div class="code-status-item"><i class="fad fa-file-code"></i> UTF-8</div>
+                        </div>
+                    </div>
+                    <div class="code-editor">
+                        <div class="code-editor-header">
+                            <div class="code-editor-dots">
+                                <div class="code-editor-dot red"></div>
+                                <div class="code-editor-dot yellow"></div>
+                                <div class="code-editor-dot green"></div>
+                            </div>
+                            <div class="code-editor-title">
+                                <i class="fab fa-telegram"></i>
+                                <span>telegram_bot.py</span>
+                            </div>
+                            <div class="code-editor-actions">
+                                <button class="code-editor-btn" onclick="copyCodeBlock(this, 'code2')" title="Copy code"><i class="fad fa-copy"></i></button>
+                            </div>
+                        </div>
+                        <div class="code-editor-tabs">
+                            <button class="code-tab active"><i class="fab fa-python"></i> bot.py</button>
+                        </div>
+                        <div class="code-editor-body">
+                            <div class="line-numbers">
+                                <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span>
+                            </div>
+                            <div class="code-content">
+                                <pre id="code2"><span class="keyword">import</span> asyncio
+<span class="keyword">import</span> json
+<span class="keyword">import</span> pycountry
+<span class="keyword">from</span> pyrogram <span class="keyword">import</span> Client, filters
+<span class="keyword">from</span> pyrogram.enums <span class="keyword">import</span> ParseMode
+<span class="keyword">from</span> pyrogram.types <span class="keyword">import</span> InlineKeyboardMarkup, InlineKeyboardButton
+<span class="keyword">from</span> pyrogram.handlers <span class="keyword">import</span> MessageHandler
+<span class="keyword">from</span> smartbindb <span class="keyword">import</span> SmartBinDB
+<span class="keyword">from</span> telegraph <span class="keyword">import</span> Telegraph
+
+<span class="keyword">def</span> <span class="function">log_error</span>(<span class="param">message</span>):
+    <span class="builtin">print</span>(<span class="string">f"[ERROR] </span>{message}<span class="string">"</span>)
+
+COMMAND_PREFIX = [<span class="string">"/"</span>, <span class="string">","</span>, <span class="string">"."</span>, <span class="string">"!"</span>, <span class="string">"#"</span>]
+
+telegraph = <span class="class">Telegraph</span>()
+<span class="keyword">try</span>:
+    telegraph.<span class="function">create_account</span>(
+        short_name=<span class="string">"SmartUtilBot"</span>,
+        author_name=<span class="string">"SmartUtilBot"</span>,
+        author_url=<span class="string">"https://t.me/TheSmartDevs"</span>
+    )
+<span class="keyword">except</span> <span class="class">Exception</span> <span class="keyword">as</span> e:
+    <span class="function">log_error</span>(<span class="string">f"Telegraph error: </span>{e}<span class="string">"</span>)
+
+<span class="keyword">async</span> <span class="keyword">def</span> <span class="function">fetch_bins</span>(<span class="param">params</span>, <span class="param">endpoint</span>=<span class="string">"country"</span>):
+    <span class="keyword">try</span>:
+        smartdb = <span class="class">SmartBinDB</span>()
+        bins = []
+        <span class="keyword">if</span> endpoint == <span class="string">"country"</span>:
+            result = <span class="keyword">await</span> smartdb.<span class="function">get_bins_by_country</span>(
+                params.<span class="function">get</span>(<span class="string">"country"</span>, <span class="string">""</span>), 
+                params.<span class="function">get</span>(<span class="string">"limit"</span>)
+            )
+            <span class="keyword">if</span> result.<span class="function">get</span>(<span class="string">"status"</span>) == <span class="string">"SUCCESS"</span>:
+                bins = result.<span class="function">get</span>(<span class="string">"data"</span>, [])
+        <span class="keyword">elif</span> endpoint == <span class="string">"bank"</span>:
+            result = <span class="keyword">await</span> smartdb.<span class="function">get_bins_by_bank</span>(
+                params.<span class="function">get</span>(<span class="string">"bank"</span>, <span class="string">""</span>), 
+                params.<span class="function">get</span>(<span class="string">"limit"</span>)
+            )
+            <span class="keyword">if</span> result.<span class="function">get</span>(<span class="string">"status"</span>) == <span class="string">"SUCCESS"</span>:
+                bins = result.<span class="function">get</span>(<span class="string">"data"</span>, [])
+        <span class="keyword">return</span> bins
+    <span class="keyword">except</span> <span class="class">Exception</span> <span class="keyword">as</span> e:
+        <span class="function">log_error</span>(<span class="string">f"Fetch error: </span>{e}<span class="string">"</span>)
+        <span class="keyword">return</span> []
+
+<span class="keyword">def</span> <span class="function">setup_db_handlers</span>(<span class="param">app</span>: Client):
+    app.<span class="function">add_handler</span>(<span class="class">MessageHandler</span>(
+        bindb_handler, 
+        filters.<span class="function">command</span>([<span class="string">"bindb"</span>], prefixes=COMMAND_PREFIX)
+    ))
+
+<span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:
+    app = <span class="class">Client</span>(
+        <span class="string">"SmartBinDBBot"</span>,
+        api_id=API_ID,
+        api_hash=<span class="string">"API_HASH"</span>,
+        bot_token=<span class="string">"BOT_TOKEN"</span>
+    )
+    <span class="function">setup_db_handlers</span>(app)
+    app.<span class="function">run</span>()</pre>
+                            </div>
+                        </div>
+                        <div class="code-status">
+                            <div class="code-status-left">
+                                <div class="code-status-item"><div class="code-status-dot"></div> Ready</div>
+                                <div class="code-status-item"><i class="fab fa-telegram"></i> Pyrogram</div>
+                            </div>
+                            <div class="code-status-item"><i class="fad fa-file-code"></i> UTF-8</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="developer" class="section">
+            <div class="container">
+                <div class="section-header">
+                    <div class="section-badge"><i class="fad fa-user-circle"></i> Developer</div>
+                    <h2 class="section-title">Meet the Creator</h2>
+                    <p class="section-description">The architect behind SmartBinDB library.</p>
+                </div>
+                <div class="developer-card">
+                    <div class="developer-card-inner">
+                        <div class="developer-avatar"><i class="fad fa-code"></i></div>
+                        <h3 class="developer-name">Abir Arafat Chawdhury</h3>
+                        <p class="developer-handle">@ISmartCoder</p>
+                        <p class="developer-bio">Passionate developer crafting powerful Python libraries and Telegram bots. Building tools that make developers' lives easier.</p>
+                        <div class="developer-links">
+                            <a href="https://t.me/ISmartCoder" target="_blank" class="dev-link"><i class="fab fa-telegram"></i> Telegram</a>
+                            <a href="https://github.com/TheSmartDevs" target="_blank" class="dev-link"><i class="fab fa-github"></i> GitHub</a>
+                            <a href="https://t.me/TheSmartDevs" target="_blank" class="dev-link"><i class="fad fa-users"></i> Community</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <footer class="footer">
+            <div class="container">
+                <div class="footer-content">
+                    <a href="#" class="footer-brand">
+                        <div class="footer-brand-icon"><i class="fad fa-database"></i></div>
+                        <span>SmartBinDB</span>
+                    </a>
+                    <p class="footer-text">
+                        Built with <strong>passion</strong> and <strong>innovation</strong> by <a href="https://t.me/ISmartCoder" target="_blank">Abir Arafat Chawdhury</a>
+                        <br>
+                        Join our <strong>developer community</strong>: <a href="https://t.me/TheSmartDevs" target="_blank">t.me/TheSmartDevs</a>
+                    </p>
+                    <div class="social-links">
+                        <a href="https://t.me/TheSmartDevs" target="_blank" class="social-link"><i class="fab fa-telegram"></i></a>
+                        <a href="https://x.com/abirxdhackz" target="_blank" class="social-link"><i class="fab fa-twitter"></i></a>
+                        <a href="https://github.com/TheSmartDevs" target="_blank" class="social-link"><i class="fab fa-github"></i></a>
+                        <a href="https://facebook.com/abirxdhackz" target="_blank" class="social-link"><i class="fab fa-facebook"></i></a>
+                        <a href="https://instagram.com/abirxdhackz" target="_blank" class="social-link"><i class="fab fa-instagram"></i></a>
+                        <a href="https://youtube.com/@abirxdhackz" target="_blank" class="social-link"><i class="fab fa-youtube"></i></a>
+                    </div>
+                    <div class="copyright">© 2025 SmartBinDB Library. All Rights Reserved.</div>
+                </div>
+            </div>
+        </footer>
     </div>
 
-    <nav class="navbar py-4">
-        <div class="container mx-auto px-4 flex justify-between items-center">
-            <span class="toggle-btn" onclick="toggleSidebar()"><i class="fas fa-bars"></i></span>
-            <a href="#" class="text-2xl font-bold text-blue-600 flex items-center">
-                <i class="fas fa-database text-blue-500 mr-2"></i>
-                SmartBinDB
-            </a>
-            <div class="hidden md:flex items-center space-x-6">
-                <a href="#features" class="nav-link text-blue-600">Features</a>
-                <a href="#docs" class="nav-link text-blue-600">Documentation</a>
-                <a href="#developer" class="nav-link text-blue-600">Developer</a>
-                <a href="https://t.me/TheSmartDevs" target="_blank" class="nav-link text-blue-600">Updates</a>
-            </div>
-        </div>
-    </nav>
-
-    <header class="hero">
-        <div class="container mx-auto px-4">
-            <h1 class="text-5xl font-bold mb-4 text-blue-600">SmartBinDB Library</h1>
-            <p class="text-xl mb-6 text-gray-800">Unlock the power of BIN data with a lightning-fast, asynchronous Python library covering 228 countries and 30,000,000 records.</p>
-            <a href="#docs" class="inline-block bg-blue-500 text-white px-6 py-3 rounded-full mt-4 hover:bg-blue-600 transition">Get Started</a>
-        </div>
-    </header>
-
-    <section id="features" class="container mx-auto px-4 py-16">
-        <h2 class="text-3xl font-bold text-center mb-8 text-blue-600">Features</h2>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div class="feature-card">
-                <h3 class="text-xl font-semibold mb-2"><i class="fas fa-bolt mr-2"></i> Superfast Async Operations</h3>
-                <p>Leverages asyncio for high-performance, non-blocking data retrieval.</p>
-            </div>
-            <div class="feature-card">
-                <h3 class="text-xl font-semibold mb-2"><i class="fas fa-globe mr-2"></i> Global Coverage</h3>
-                <p>Access BIN data for 228 countries with a massive 30,000,000 record database.</p>
-            </div>
-            <div class="feature-card">
-                <h3 class="text-xl font-semibold mb-2"><i class="fas fa-memory mr-2"></i> Low Memory Footprint</h3>
-                <p>Optimized caching for minimal memory usage and blazing speed.</p>
-            </div>
-            <div class="feature-card">
-                <h3 class="text-xl font-semibold mb-2"><i class="fas fa-plug mr-2"></i> Easy Integration</h3>
-                <p>Seamless compatibility with bots, MTProto APIs, and Python scripts.</p>
-            </div>
-            <div class="feature-card">
-                <h3 class="text-xl font-semibold mb-2"><i class="fas fa-search mr-2"></i> Flexible Lookups</h3>
-                <p>Search by country code, bank name, or specific BIN with optional limits.</p>
-            </div>
-            <div class="feature-card">
-                <h3 class="text-xl font-semibold mb-2"><i class="fas fa-code mr-2"></i> Python 3.8+</h3>
-                <p>Compatible with Python 3.8 and all future versions for broad support.</p>
-            </div>
-        </div>
-    </section>
-
-    <section id="docs" class="container mx-auto px-4 py-16">
-        <h2 class="text-3xl font-bold text-center mb-8 text-blue-600">Documentation</h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div class="response-card p-6">
-                <h3 class="text-xl font-semibold mb-2">Basic Asyncio Example</h3>
-                <p>Simple example to perform BIN lookups using asyncio.</p>
-                <pre>import asyncio
-from smartbindb import SmartBinDB
-
-async def main():
-    smartdb = SmartBinDB()
-    print("What would you like to do?")
-    print("1. BIN lookup")
-    print("2. Bank based search")
-    print("3. Country based search")
-    choice = input("Enter your choice (1, 2, or 3): ")
-
-    if choice == "1":
-        bin_number = input("Enter BIN number: ")
-        result = await smartdb.get_bin_info(bin_number)
-        print("BIN info:", result)
-    elif choice == "2":
-        bank_name = input("Enter bank name: ")
-        use_limit = input("Do you want to use a limit? (yes/no): ").lower()
-        limit = None
-        if use_limit == "yes":
-            limit = int(input("Enter limit: "))
-        result = await smartdb.get_bins_by_bank(bank_name, limit)
-        print("Bank results:", result)
-    elif choice == "3":
-        country_code = input("Enter country code: ").upper()
-        use_limit = input("Do you want to use a limit? (yes/no): ").lower()
-        limit = None
-        if use_limit == "yes":
-            limit = int(input("Enter limit: "))
-        result = await smartdb.get_bins_by_country(country_code, limit)
-        print("Country results:", result)
-    else:
-        print("Invalid choice. Please select 1, 2, or 3.")
-
-if __name__ == "__main__":
-    asyncio.run(main())
-                </pre>
-            </div>
-            <div class="response-card p-6">
-                <h3 class="text-xl font-semibold mb-2">Pyrogram Integration Example</h3>
-                <p>Integrate SmartBinDB with a Telegram bot using Pyrogram.</p>
-                <pre>import asyncio
-import json
-import os
-import pycountry
-from pyrogram import Client, filters
-from pyrogram.enums import ParseMode
-from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-from pyrogram.handlers import MessageHandler
-from smartbindb import SmartBinDB
-from telegraph import Telegraph
-
-def log_error(message):
-    print(f"[ERROR] {message}")
-
-COMMAND_PREFIX = ["/", ",", ".", "!", "#"]
-
-telegraph = Telegraph()
-try:
-    telegraph.create_account(
-        short_name="SmartUtilBot",
-        author_name="SmartUtilBot",
-        author_url="https://t.me/TheSmartDevs"
-    )
-except Exception as e:
-    log_error(f"Failed to create or access Telegraph account: {e}")
-
-async def fetch_bins(params, client=None, message=None, endpoint="country"):
-    try:
-        smartdb = SmartBinDB()
-        bins = []
-        if endpoint == "country":
-            result = await smartdb.get_bins_by_country(params.get("country", ""), params.get("limit"))
-            if result.get("status") == "SUCCESS":
-                bins = result.get("data", [])
-        elif endpoint == "bank":
-            result = await smartdb.get_bins_by_bank(params.get("bank", ""), params.get("limit"))
-            if result.get("status") == "SUCCESS":
-                bins = result.get("data", [])
-        if not bins:
-            log_error(f"No data returned for params {params}")
-            return []
-        return bins
-    except Exception as e:
-        log_error(f"Exception occurred while fetching data: {e}")
-        return []
-
-def process_bins_to_json(bins):
-    processed = []
-    for bin_data in bins:
-        processed.append({
-            "bin": bin_data.get("bin", "Unknown"),
-            "bank": bin_data.get("issuer", "Unknown"),
-            "country_code": bin_data.get("country_code", "Unknown"),
-            "brand": bin_data.get("brand", "Unknown"),
-            "category": bin_data.get("category", "Unknown"),
-            "type": bin_data.get("type", "Unknown"),
-            "website": bin_data.get("website", "")
-        })
-    return processed
-
-async def create_telegraph_page(content: str) -> list:
-    try:
-        truncated_content = content[:40000]
-        max_size_bytes = 20 * 1024
-        pages = []
-        page_content = ""
-        current_size = 0
-        lines = truncated_content.splitlines(keepends=True)
-
-        for line in lines:
-            line_bytes = line.encode('utf-8', errors='ignore')
-            if current_size + len(line_bytes) > max_size_bytes and page_content:
-                safe_content = page_content.replace('<', '&lt;').replace('>', '&gt;')
-                html_content = f'<pre>{safe_content}</pre>'
-                page = telegraph.create_page(
-                    title="SmartBins",
-                    html_content=html_content,
-                    author_name="SmartUtilBot",
-                    author_url="https://t.me/TheSmartDevs"
-                )
-                pages.append(page['url'])
-                page_content = ""
-                current_size = 0
-                await asyncio.sleep(0.5)
-
-            page_content += line
-            current_size += len(line_bytes)
-
-        if page_content:
-            safe_content = page_content.replace('<', '&lt;').replace('>', '&gt;')
-            html_content = f'<pre>{safe_content}</pre>'
-            page = telegraph.create_page(
-                title="SmartBins",
-                html_content=html_content,
-                author_name="SmartUtilBot",
-                author_url="https://t.me/TheSmartDevs"
-            )
-            pages.append(page['url'])
-            await asyncio.sleep(0.5)
-
-        return pages
-    except Exception as e:
-        log_error(f"Failed to create Telegraph page: {e}")
-        return []
-
-def generate_message(bins, identifier):
-    message = f"**Smart Tool - Bin database 📋**\n**━━━━━━━━━━━━━━━━━━**\n\n"
-    for i, bin_data in enumerate(bins[:5], start=1):
-        message += (f"{i}. **BIN:** `{bin_data['bin']}`\n"
-                    f"**Bank:** {bin_data['bank']}\n"
-                    f"**Country:** {bin_data['country_code']}\n\n")
-    return message
-
-async def bindb_handler(client, message):
-    try:
-        if len(message.command) != 2:
-            await client.send_message(message.chat.id, "**Please provide a country name or code. e.g. /bindb BD or /bindb Bangladesh**", parse_mode=ParseMode.MARKDOWN)
-            return
-
-        country_input = message.command[1].upper()
-        if country_input in ["UK", "UNITED KINGDOM"]:
-            country_code = "GB"
-            country_name = "United Kingdom"
-        else:
-            country = pycountry.countries.search_fuzzy(country_input)[0] if len(country_input) > 2 else pycountry.countries.get(alpha_2=country_input)
-            if not country:
-                await client.send_message(message.chat.id, "**Invalid country name or code**", parse_mode=ParseMode.MARKDOWN)
-                return
-            country_code = country.alpha_2.upper()
-            country_name = country.name
-
-        loading_message = await client.send_message(message.chat.id, f"**Finding Bins With Country {country_name}...**", parse_mode=ParseMode.MARKDOWN)
-
-        params = {"country": country_code, "limit": 2000}
-        bins = await fetch_bins(params, client=client, message=message, endpoint="country")
-        if not bins:
-            await client.edit_message_text(message.chat.id, loading_message.id, "**Sorry No Bins Found**", parse_mode=ParseMode.MARKDOWN)
-            return
-
-        processed_bins = process_bins_to_json(bins)
-        message_text = generate_message(processed_bins, country_code)
-
-        keyboard = None
-        if len(processed_bins) > 5:
-            bins_content = json.dumps(processed_bins[5:], indent=2)
-            content_size = len(bins_content.encode('utf-8'))
-            telegraph_urls = await create_telegraph_page(bins_content)
-            if telegraph_urls:
-                buttons = []
-                if content_size <= 20 * 1024:
-                    buttons.append([InlineKeyboardButton("Full Output", url=telegraph_urls[0])])
-                else:
-                    for i in range(0, len(telegraph_urls), 2):
-                        row = [
-                            InlineKeyboardButton(f"Output {i+1}", url=telegraph_urls[i])
-                        ]
-                        if i + 1 < len(telegraph_urls):
-                            row.append(InlineKeyboardButton(f"Output {i+2}", url=telegraph_urls[i+1]))
-                        buttons.append(row)
-                keyboard = InlineKeyboardMarkup(buttons)
-
-        await client.edit_message_text(message.chat.id, loading_message.id, message_text, reply_markup=keyboard, parse_mode=ParseMode.MARKDOWN)
-    except Exception as e:
-        log_error(f"Exception in bindb_handler: {e}")
-        await client.edit_message_text(message.chat.id, loading_message.id, "**Sorry, an error occurred while fetching BIN data ❌**", parse_mode=ParseMode.MARKDOWN)
-
-async def binbank_handler(client, message):
-    try:
-        if len(message.command) < 2:
-            await client.send_message(message.chat.id, "**Please provide a bank name. e.g. /binbank Pubali**", parse_mode=ParseMode.MARKDOWN)
-            return
-
-        bank_name = ' '.join(message.command[1:]).title()
-        loading_message = await client.send_message(message.chat.id, f"**Finding Bins With Bank {bank_name}...**", parse_mode=ParseMode.MARKDOWN)
-
-        params = {"bank": bank_name, "limit": 2000}
-        bins = await fetch_bins(params, client=client, message=message, endpoint="bank")
-        if not bins:
-            await client.edit_message_text(message.chat.id, loading_message.id, "**Sorry No Bins Found**", parse_mode=ParseMode.MARKDOWN)
-            return
-
-        processed_bins = process_bins_to_json(bins)
-        message_text = generate_message(processed_bins, bank_name)
-
-        keyboard = None
-        if len(processed_bins) > 5:
-            bins_content = json.dumps(processed_bins[5:], indent=2)
-            content_size = len(bins_content.encode('utf-8'))
-            telegraph_urls = await create_telegraph_page(bins_content)
-            if telegraph_urls:
-                buttons = []
-                if content_size <= 20 * 1024:
-                    buttons.append([InlineKeyboardButton("Full Output", url=telegraph_urls[0])])
-                else:
-                    for i in range(0, len(telegraph_urls), 2):
-                        row = [
-                            InlineKeyboardButton(f"Output {i+1}", url=telegraph_urls[i])
-                        ]
-                        if i + 1 < len(telegraph_urls):
-                            row.append(InlineKeyboardButton(f"Output {i+2}", url=telegraph_urls[i+1]))
-                        buttons.append(row)
-                keyboard = InlineKeyboardMarkup(buttons)
-
-        await client.edit_message_text(message.chat.id, loading_message.id, message_text, reply_markup=keyboard, parse_mode=ParseMode.MARKDOWN)
-    except Exception as e:
-        log_error(f"Exception in binbank_handler: {e}")
-        await client.edit_message_text(message.chat.id, loading_message.id, "**Sorry, an error occurred while fetching BIN data ❌**", parse_mode=ParseMode.MARKDOWN)
-
-def setup_db_handlers(app: Client):
-    app.add_handler(MessageHandler(bindb_handler, filters.command(["bindb"], prefixes=COMMAND_PREFIX) & (filters.private | filters.group)))
-    app.add_handler(MessageHandler(binbank_handler, filters.command(["binbank"], prefixes=COMMAND_PREFIX) & (filters.private | filters.group)))
-
-if __name__ == "__main__":
-    app = Client(
-        "SmartBinDBBot",
-        api_id=API_ID,
-        api_hash="API_HASH",
-        bot_token="BOT_TOKEN"
-    )
-    setup_db_handlers(app)
-    app.run()
-                </pre>
-            </div>
-        </div>
-    </section>
-
-    <section id="developer" class="container mx-auto px-4 py-16 text-center">
-        <h2 class="text-3xl font-bold mb-8 text-blue-600">The Architect Of This Library </h2>
-        <div class="response-card p-6 max-w-md mx-auto">
-            <i class="fas fa-user text-blue-500 text-4xl mb-3"></i>
-            <h3 class="text-xl font-semibold">Abir Arafat Chawdhury</h3>
-            <p>Crafted with passion by <a href="https://t.me/ISmartCoder" target="_blank" class="text-blue-400 hover:text-blue-300">@ISmartCoder</a></p>
-            <p>Join the <a href="https://t.me/TheSmartDevs" target="_blank" class="text-blue-400 hover:text-blue-300">Updates Channel</a> for the latest news!</p>
-            <a href="https://t.me/TheSmartDevs" class="inline-block bg-blue-500 text-white px-6 py-3 rounded-full mt-4 hover:bg-blue-600 transition">Join Now</a>
-        </div>
-    </section>
-
-    <footer class="bg-gray-100 bg-opacity-90 py-8 text-center">
-        <p class="text-gray-800">Built with ❤️ by <a href="https://t.me/ISmartCoder" target="_blank" class="text-blue-400 hover:text-blue-300"><i class="fa-brands fa-telegram"></i> @ISmartCoder</a></p>
-        <p class="text-gray-800">Join our community at <a href="https://t.me/TheSmartDevs" target="_blank" class="text-blue-400 hover:text-blue-300"><i class="fa-brands fa-telegram"></i> @TheSmartDevs</a></p>
-        <p class="text-gray-800">© 2025 SmartBinDB Library</p>
-        <div class="social-icons mt-4">
-            <a href="https://t.me/TheSmartDevs" target="_blank"><i class="fa-brands fa-telegram"></i></a>
-            <a href="https://x.com/abirxdhackz" target="_blank"><i class="fa-brands fa-twitter"></i></a>
-            <a href="https://github.com/TheSmartDevs" target="_blank"><i class="fa-brands fa-github"></i></a>
-            <a href="https://facebook.com/abirxdhackz" target="_blank"><i class="fa-brands fa-facebook-f"></i></a>
-            <a href="https://instagram.com/abirxdhackz" target="_blank"><i class="fa-brands fa-instagram"></i></a>
-            <a href="https://youtube.com/@abirxdhackz" target="_blank"><i class="fa-brands fa-youtube"></i></a>
-        </div>
-    </footer>
+    <button class="scroll-top" id="scrollTop" onclick="scrollToTop()"><i class="fad fa-arrow-up"></i></button>
 
     <script>
-        const canvas = document.getElementById('canvas');
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({ canvas, alpha: true });
+        var canvas = document.getElementById('canvas');
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        var renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         camera.position.z = 5;
 
-        const particles = new THREE.Group();
-        for (let i = 0; i < 200; i++) {
-            const geometry = new THREE.SphereGeometry(0.02, 16, 16);
-            const material = new THREE.MeshBasicMaterial({ color: 0x3b82f6 });
-            const particle = new THREE.Mesh(geometry, material);
-            particle.position.set(
-                (Math.random() - 0.5) * 10,
-                (Math.random() - 0.5) * 10,
-                (Math.random() - 0.5) * 10
-            );
+        var particles = new THREE.Group();
+        var particleCount = 120;
+        var velocities = [];
+
+        for (var i = 0; i < particleCount; i++) {
+            var geometry = new THREE.SphereGeometry(0.015, 8, 8);
+            var hue = 0.1 + Math.random() * 0.15;
+            var material = new THREE.MeshBasicMaterial({ 
+                color: new THREE.Color().setHSL(hue, 0.9, 0.6),
+                transparent: true,
+                opacity: 0.7
+            });
+            var particle = new THREE.Mesh(geometry, material);
+            var x = (Math.random() - 0.5) * 12;
+            var y = (Math.random() - 0.5) * 12;
+            var z = (Math.random() - 0.5) * 8;
+            particle.position.set(x, y, z);
+            velocities.push({
+                x: (Math.random() - 0.5) * 0.002,
+                y: (Math.random() - 0.5) * 0.002,
+                z: (Math.random() - 0.5) * 0.001
+            });
             particles.add(particle);
         }
         scene.add(particles);
 
+        var linesMaterial = new THREE.LineBasicMaterial({ 
+            color: 0xFFD700, 
+            transparent: true, 
+            opacity: 0.12 
+        });
+        var linesGroup = new THREE.Group();
+        scene.add(linesGroup);
+
+        function updateLines() {
+            while(linesGroup.children.length > 0) {
+                linesGroup.remove(linesGroup.children[0]);
+            }
+            var particleArray = particles.children;
+            for (var i = 0; i < particleArray.length; i++) {
+                for (var j = i + 1; j < particleArray.length; j++) {
+                    var dist = particleArray[i].position.distanceTo(particleArray[j].position);
+                    if (dist < 1.5) {
+                        var geometry = new THREE.BufferGeometry().setFromPoints([
+                            particleArray[i].position,
+                            particleArray[j].position
+                        ]);
+                        var line = new THREE.Line(geometry, linesMaterial);
+                        linesGroup.add(line);
+                    }
+                }
+            }
+        }
+
+        var mouseX = 0;
+        var mouseY = 0;
+        document.addEventListener('mousemove', function(e) {
+            mouseX = (e.clientX / window.innerWidth) * 2 - 1;
+            mouseY = -(e.clientY / window.innerHeight) * 2 + 1;
+        });
+
         function animate() {
             requestAnimationFrame(animate);
-            particles.rotation.y += 0.002;
+            particles.children.forEach(function(particle, i) {
+                particle.position.x += velocities[i].x;
+                particle.position.y += velocities[i].y;
+                particle.position.z += velocities[i].z;
+                if (Math.abs(particle.position.x) > 6) velocities[i].x *= -1;
+                if (Math.abs(particle.position.y) > 6) velocities[i].y *= -1;
+                if (Math.abs(particle.position.z) > 4) velocities[i].z *= -1;
+            });
+            particles.rotation.y += 0.0003;
+            particles.rotation.x = mouseY * 0.1;
+            particles.rotation.y += mouseX * 0.0005;
+            updateLines();
             renderer.render(scene, camera);
         }
         animate();
 
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            sidebar.classList.toggle('active');
+        window.addEventListener('resize', function() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        window.addEventListener('scroll', function() {
+            var scrollTop = document.getElementById('scrollTop');
+            if (window.scrollY > 300) {
+                scrollTop.classList.add('visible');
+            } else {
+                scrollTop.classList.remove('visible');
+            }
+        });
+
+        function scrollToTop() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
+
+        function copyToClipboard(text, btn) {
+            navigator.clipboard.writeText(text).then(function() {
+                var icon = btn.querySelector('i');
+                icon.classList.remove('fa-copy');
+                icon.classList.add('fa-check', 'copied');
+                setTimeout(function() {
+                    icon.classList.remove('fa-check', 'copied');
+                    icon.classList.add('fa-copy');
+                }, 2000);
+            });
+        }
+
+        function copyCodeBlock(btn, codeId) {
+            var codeElement = document.getElementById(codeId);
+            var text = codeElement.innerText;
+            navigator.clipboard.writeText(text).then(function() {
+                btn.classList.add('copied');
+                var icon = btn.querySelector('i');
+                icon.classList.remove('fa-copy');
+                icon.classList.add('fa-check');
+                setTimeout(function() {
+                    btn.classList.remove('copied');
+                    icon.classList.remove('fa-check');
+                    icon.classList.add('fa-copy');
+                }, 2000);
+            });
+        }
+
+        document.querySelectorAll('a[href^="#"]').forEach(function(anchor) {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                var target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
     </script>
 </body>
 </html>
